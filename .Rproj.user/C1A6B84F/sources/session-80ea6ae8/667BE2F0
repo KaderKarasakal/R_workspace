@@ -1,11 +1,11 @@
 {
     "id": "667BE2F0",
-    "path": null,
-    "project_path": null,
+    "path": "~/R_workspace/practice_project.R",
+    "project_path": "practice_project.R",
     "type": "r_source",
-    "hash": "0",
+    "hash": "2245854048",
     "contents": "",
-    "dirty": true,
+    "dirty": false,
     "created": 1729323433245.0,
     "source_on_save": false,
     "relative_order": 1,
@@ -17,11 +17,11 @@
         "scrollLine": "50"
     },
     "folds": "",
-    "lastKnownWriteTime": 866101335963125344,
-    "encoding": "",
+    "lastKnownWriteTime": 1729599252,
+    "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1729585247453,
+    "last_content_update": 1729599252291,
     "read_only": false,
     "read_only_alternatives": []
 }
