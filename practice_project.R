@@ -65,5 +65,16 @@ rm(temp) #removing unwanted cells from the dataset
 # multiplies this by a scale factor (10,000 by default), and log-transforms the result. 
 #Normalized values are stored in pbmc[["RNA"]]@data.
 pbmc <- NormalizeData(pbmc, normalization.method = "LogNormalize", scale.factor = 10000, verbose = FALSE)
-                     
+
+# set seed and put two plots in one figure
+set.seed(123)
+par(mfrow=c(1,2))
+# original expression distribution
+raw_geneExp = as.vector(pbmc[['RNA']]@counts) %>% sample(10000)
+raw_geneExp = raw_geneExp[raw_geneExp != 0]
+hist(raw_geneExp)
+# expression distribution after normalization
+logNorm_geneExp = as.vector(pbmc[['RNA']]@data) %>% sample(10000)
+logNorm_geneExp = logNorm_geneExp[logNorm_geneExp != 0]
+hist(logNorm_geneExp)                     
 
