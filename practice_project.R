@@ -70,11 +70,75 @@ pbmc <- NormalizeData(pbmc, normalization.method = "LogNormalize", scale.factor 
 set.seed(123)
 par(mfrow=c(1,2))
 # original expression distribution
-raw_geneExp = as.vector(pbmc[['RNA']]@counts) %>% sample(10000)
+raw_geneExp = as.vector(pbmc[['RNA']]$counts) %>% sample(10000)
 raw_geneExp = raw_geneExp[raw_geneExp != 0]
 hist(raw_geneExp)
 # expression distribution after normalization
-logNorm_geneExp = as.vector(pbmc[['RNA']]@data) %>% sample(10000)
+logNorm_geneExp = as.vector(pbmc[['RNA']]$data) %>% sample(10000)
 logNorm_geneExp = logNorm_geneExp[logNorm_geneExp != 0]
-hist(logNorm_geneExp)                     
+hist(logNorm_geneExp) 
+
+# same as the above command, skip here
+pbmc <- NormalizeData(pbmc)
+
+#We next calculate a subset of features 
+#that exhibit high cell-to-cell variation in the dataset 
+#(i.e, they are highly expressed in some cells, and lowly expressed in others
+pbmc <- FindVariableFeatures(pbmc, selection.method = "vst", nfeatures = 2000, verbose = FALSE)
+# Identify the 10 most highly variable genes
+top10 <- head(VariableFeatures(pbmc), 10)
+# plot variable features with and without labels
+plot1 <- VariableFeaturePlot(pbmc) + 
+  theme(legend.position="top")
+plot2 <- LabelPoints(plot = plot1, points = top10, repel = TRUE) + 
+  theme(legend.position="none")
+plot1 + plot2
+
+#Next, we apply a linear transformation (‘scaling’) that is a standard pre-processing 
+#step prior to dimensional reduction techniques like PCA. The ScaleData() function:
+all.genes <- rownames(pbmc)
+pbmc <- ScaleData(pbmc, features = all.genes, verbose = FALSE)
+#When using the above command, we use all genes to scale data. Scaling is an essential step 
+#in the Seurat workflow, but only on genes that will be used as input to PCA. Therefore, 
+#the default in ScaleData() is only to perform scaling on the previously identified variable 
+#features (2,000 by default). And it will make this step faster.
+
+pbmc <- RunPCA(pbmc, features = VariableFeatures(object = pbmc), verbose = FALSE)
+#Next we perform PCA on the scaled data. By default, only the previously determined variable features
+#are used as input, but can be defined using features argument if you wish to choose a different subset.
+# Examine and visualize PCA results a few different ways
+print(pbmc[["pca"]], dims = 1:5, nfeatures = 5)
+VizDimLoadings(pbmc, dims = 1:2, reduction = "pca")
+DimPlot(pbmc, reduction = "pca")
+DimHeatmap(pbmc, dims = 1, cells = 500, balanced = TRUE)
+DimHeatmap(pbmc, dims = 1:9, cells = 500, balanced = TRUE)
+
+pbmc <- FindNeighbors(pbmc, dims = 1:20, verbose = FALSE)
+#K-nearest neighbor (KNN) graph,with edges drawn between cells with similar feature expression patterns
+# dims:20 = first 20 principle components
+pbmc <- FindClusters(pbmc, resolution = 0.5, verbose = FALSE)
+#To cluster the cells, we next apply modularity optimization techniques such as the Louvain algorithm (default)
+#or SLM (Blondel et al. 2008), to iteratively group cells together, with the goal of optimizing the standard modularity function. 
+Idents(pbmc) #  The clusters can be found
+
+head(Idents(pbmc), 5)
+# Look at cluster IDs of the first 5 cells
+
+#Seurat offers several non-linear dimensional reduction techniques, 
+#such as tSNE and UMAP, to visualize and explore these datasets.
+pbmc <- RunUMAP(pbmc, dims = 1:20, verbose = FALSE)
+#Then we can get the UMAP plot of the single cell clustering results.
+DimPlot(pbmc, reduction = "umap")
+
+pbmc <- RunTSNE(pbmc, dims = 1:20, verbose = FALSE)
+DimPlot(pbmc, reduction = "tsne")
+
+DimPlot(pbmc, reduction = "tsne", label = TRUE)
+
+plot <- DimPlot(object = pbmc)
+LabelClusters(plot = plot, id = 'ident')
+
+saveRDS(pbmc, file = "C:/Users/tubak/OneDrive/Belgeler/R_workspace/pbmc_processed.rds")
+
+
 
